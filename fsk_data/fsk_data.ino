@@ -2,8 +2,8 @@
 #include "data.h"
 
 #define BUFFER_SIZE 10
-#define CONTROL_PORT 12
-#define MOD_PORT 7
+#define CONTROL_PORT 12 // Port to control MOSFET gate driver
+#define MOD_PORT 7 // Port to EXT MOD
 
 #define RATE_MIN 1
 #define RATE_MAX 500000
