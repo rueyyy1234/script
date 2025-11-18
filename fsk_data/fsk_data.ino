@@ -10,11 +10,11 @@
 
 uint8_t buffer[BUFFER_SIZE];
 uint8_t buffer_len = 0;
+uint16_t data_idx = 0;
+
 
 uint32_t bit_interval_us = 1000000UL;
 uint32_t data_rate_hz = 1;
-
-uint16_t data_idx = 0;
 uint32_t next_time_us = 0;
 
 extern const uint8_t rand_data[];
