@@ -12,7 +12,7 @@ uint8_t buffer[BUFFER_SIZE];
 uint8_t buffer_len = 0;
 
 uint32_t bit_interval_us = 1000000UL;
-uint32_t data_rate_hz = 1;             // stored human-readable rate
+uint32_t data_rate_hz = 1;
 
 uint16_t data_idx = 0;
 uint32_t next_time_us = 0;
@@ -28,7 +28,7 @@ void setup() {
   pinMode(CONTROL_PORT, OUTPUT);
   pinMode(MOD_PORT, OUTPUT);
 
-  // Load saved Hz rate
+  // Load saved BPS
   EEPROM.get(0, data_rate_hz);
   if (data_rate_hz < RATE_MIN || data_rate_hz > RATE_MAX) {
     data_rate_hz = 1;
@@ -68,7 +68,6 @@ void loop() {
     // END OF LINE
     if (c == '\r' || c == '\n') {
 
-      // CRLF compatibility
       if (c == '\r' && Serial.peek() == '\n') Serial.read();
 
       // Empty line
@@ -77,7 +76,7 @@ void loop() {
         return;
       }
 
-      // '?' → print current rate
+      // QUERY CURRENT RATE
       if (buffer_len == 1 && buffer[0] == '?') {
         Serial.print("\r\nRATE = ");
         Serial.print(data_rate_hz);
@@ -86,14 +85,14 @@ void loop() {
         return;
       }
 
-      // Not digits
+      // Validate input
       if (!isDigits(buffer, buffer_len)) {
         Serial.println("FAILED");
         clearBuffer();
         return;
       }
 
-      // Convert to integer (Hz)
+      // Convert char to int
       uint32_t input_rate = atol((char *)buffer);
 
       // Validate range
