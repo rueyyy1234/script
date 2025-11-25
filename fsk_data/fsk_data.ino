@@ -1,40 +1,68 @@
-#define CONTROL_PORT 12
-#define MOD_PORT 7
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
-uint32_t bit_interval_us = 67;
-uint32_t offset = 6;
-uint32_t next_time_us = 0;
-uint8_t c = 0;
-uint8_t bit;
+#define CONTROL_PIN PB4
+#define MOD_PIN     PD7
+
+uint8_t currentByte = 0;
+uint8_t bitIndex = 0;
+uint8_t readComplete = 0;
+
+const uint16_t bit_interval_us = 30;
+
+void initTimer1(uint16_t us) {
+    // Timer/Counter control registers - reset
+    TCCR1A = 0;
+    TCCR1B = 0; 
+
+    // Timer/Counter control registers
+    TCCR1B |= (1 << WGM12); // Clear timer on compare mode, update OCR1A immediately
+    TCCR1B |= (1 << CS11);  // CLK_IO/8 prescale
+
+    // OCRnx = f_clk_io/(f_OCnx*2*N) - 1, while N = 8
+    OCR1A = (us * 2) - 0; // Call ISR when OCR1A value reached
+    TIMSK1 |= (1 << OCIE1A); // Timer/Counter1, Output Compare A Match Interrupt Enable
+}
+
 void setup() {
-  Serial.begin(460800);
-  pinMode(CONTROL_PORT, OUTPUT);
-  pinMode(MOD_PORT, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
+    Serial.begin(460800);
+    DDRB |= (1 << CONTROL_PIN);
+    DDRD |= (1 << MOD_PIN);
+    initTimer1(bit_interval_us);
 
-  digitalWrite(LED_BUILTIN, HIGH);
+    // Enable ISR
+    sei();
+}
+
+// Timer/Counter1 Compare Match A
+ISR(TIMER1_COMPA_vect) {
+
+    if (!readComplete) return;
+
+    uint8_t bit = (currentByte >> (7 - bitIndex)) & 0x01;
+
+    if (bit) {
+        PORTB |=  (1 << CONTROL_PIN);
+        PORTD &= ~(1 << MOD_PIN);
+    } else {
+        PORTB &= ~(1 << CONTROL_PIN);
+        PORTD |=  (1 << MOD_PIN);
+    }
+
+    bitIndex++;
+
+    if (bitIndex >= 8) {
+        // 8 bits output complete - proceed to read
+        readComplete = 0;
+    }
 }
 
 void loop() {
-  while (Serial.available()) {
-    uint32_t now_us = micros();
 
-    c = Serial.read();
-    // send 8 bits, LSB first
-    for (uint8_t i = 0; i < 8; i++) {
-      bit = (c >> i) & 0x01;
-      while (now_us < next_time_us) {
-        now_us = micros();
-      }
-      if (bit) {
-        PORTB |= (1 << PB4);
-        PORTD &= ~(1 << PD7);
-      } else {
-        PORTB &= ~(1 << PB4); 
-        PORTD |= (1 << PD7);
-      }
-
-      next_time_us = now_us + (bit_interval_us - offset);
+    if (Serial.available() && !readComplete) {
+        currentByte = Serial.read();
+        // Byte received - proceed to output
+        bitIndex = 0;
+        readComplete = 1;
     }
-  }
 }
