@@ -1,68 +1,100 @@
-#include <avr/io.h>
-#include <avr/interrupt.h>
+#include <DueTimer.h>
 
-#define CONTROL_PIN PB4
-#define MOD_PIN     PD7
+#define CONTROL_PIN 7
+#define MOD_PIN 6
+#define BUTTON_PIN 5
 
-uint8_t currentByte = 0;
-uint8_t bitIndex = 0;
-uint8_t readComplete = 0;
+#define SWITCHING (1 << 0)
+#define LOW_FREQ_ONLY (1 << 1)
+#define HIGH_FREQ_ONLY (1 << 2)
 
-const uint16_t bit_interval_us = 30;
+#define READING (1 << 0)
+#define WRITING (1 << 1)
 
-void initTimer1(uint16_t us) {
-    // Timer/Counter control registers - reset
-    TCCR1A = 0;
-    TCCR1B = 0; 
+uint8_t switching_mode = SWITCHING;
+uint8_t state = READING;
 
-    // Timer/Counter control registers
-    TCCR1B |= (1 << WGM12); // Clear timer on compare mode, update OCR1A immediately
-    TCCR1B |= (1 << CS11);  // CLK_IO/8 prescale
+volatile uint8_t current_byte = 0;
+volatile uint8_t bit_idx = 0;
+volatile uint16_t bit_interval_us = 20;  // 100us per bit
 
-    // OCRnx = f_clk_io/(f_OCnx*2*N) - 1, while N = 8
-    OCR1A = (us * 2) - 0; // Call ISR when OCR1A value reached
-    TIMSK1 |= (1 << OCIE1A); // Timer/Counter1, Output Compare A Match Interrupt Enable
+void button_isr_handler() {
+  if (switching_mode == LOW_FREQ_ONLY) {
+    switching_mode = HIGH_FREQ_ONLY;
+  } else {
+    switching_mode = LOW_FREQ_ONLY;
+  }
+}
+
+void timer_handler() {
+  if (state == READING) return;
+
+  uint8_t bit = (current_byte >> (7 - bit_idx)) & 0x01;
+
+  if (bit) {
+    digitalWrite(MOD_PIN, HIGH);
+    digitalWrite(CONTROL_PIN, LOW);
+  } else {
+    digitalWrite(MOD_PIN, LOW);
+    digitalWrite(CONTROL_PIN, HIGH);
+  }
+
+  bit_idx++;
+
+  if (bit_idx >= 8) {
+    bit_idx = 0;
+    state = READING;  // Back to reading next byte
+  }
 }
 
 void setup() {
-    Serial.begin(460800);
-    DDRB |= (1 << CONTROL_PIN);
-    DDRD |= (1 << MOD_PIN);
-    initTimer1(bit_interval_us);
+  pinMode(BUTTON_PIN, INPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(MOD_PIN, OUTPUT);
+  pinMode(CONTROL_PIN, OUTPUT);
 
-    // Enable ISR
-    sei();
-}
+  digitalWrite(LED_BUILTIN, LOW);
 
-// Timer/Counter1 Compare Match A
-ISR(TIMER1_COMPA_vect) {
+  // If the button is HIGH at boot enter  no switching mode
+  if (digitalRead(BUTTON_PIN) == HIGH) {
+    switching_mode = LOW_FREQ_ONLY;
+    attachInterrupt(BUTTON_PIN, button_isr_handler, FALLING);
+    // Else enter switching mode
+  } else {
+    Serial.begin(115200);
+    switching_mode = SWITCHING;
+    Timer1.attachInterrupt(timer_handler);
+    Timer1.setPeriod(bit_interval_us);
+    Timer1.start();
 
-    if (!readComplete) return;
-
-    uint8_t bit = (currentByte >> (7 - bitIndex)) & 0x01;
-
-    if (bit) {
-        PORTB |=  (1 << CONTROL_PIN);
-        PORTD &= ~(1 << MOD_PIN);
-    } else {
-        PORTB &= ~(1 << CONTROL_PIN);
-        PORTD |=  (1 << MOD_PIN);
-    }
-
-    bitIndex++;
-
-    if (bitIndex >= 8) {
-        // 8 bits output complete - proceed to read
-        readComplete = 0;
-    }
+    // Read data rate
+    
+  }
 }
 
 void loop() {
 
-    if (Serial.available() && !readComplete) {
-        currentByte = Serial.read();
-        // Byte received - proceed to output
-        bitIndex = 0;
-        readComplete = 1;
+  while (switching_mode == LOW_FREQ_ONLY || switching_mode == HIGH_FREQ_ONLY) {
+    switch (switching_mode) {
+      case LOW_FREQ_ONLY:
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(100);
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(100);
+        break;
+
+      case HIGH_FREQ_ONLY:
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(600);
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(600);
+        break;
     }
+  }
+
+  while (Serial.available() && state == READING) {
+    current_byte = Serial.read();
+    state = WRITING;
+    bit_idx = 0;
+  }
 }
