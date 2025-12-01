@@ -23,8 +23,6 @@ void button_isr_handler() {
     switching_mode = HIGH_FREQ_ONLY;
   } else {
     switching_mode = LOW_FREQ_ONLY;
-    // digitalWrite(MOD_PIN, LOW);
-    // digitalWrite(CONTROL_PIN, HIGH);
   }
 }
 
