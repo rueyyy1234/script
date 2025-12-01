@@ -21,12 +21,10 @@ volatile uint16_t bit_interval_us = 20;  // 100us per bit
 void button_isr_handler() {
   if (switching_mode == LOW_FREQ_ONLY) {
     switching_mode = HIGH_FREQ_ONLY;
-    digitalWrite(MOD_PIN, HIGH);
-    digitalWrite(CONTROL_PIN, LOW);
   } else {
     switching_mode = LOW_FREQ_ONLY;
-    digitalWrite(MOD_PIN, LOW);
-    digitalWrite(CONTROL_PIN, HIGH);
+    // digitalWrite(MOD_PIN, LOW);
+    // digitalWrite(CONTROL_PIN, HIGH);
   }
 }
 
@@ -70,9 +68,6 @@ void setup() {
     Timer1.attachInterrupt(timer_handler);
     Timer1.setPeriod(bit_interval_us);
     Timer1.start();
-
-    // Read data rate
-    
   }
 }
 
@@ -81,6 +76,9 @@ void loop() {
   while (switching_mode == LOW_FREQ_ONLY || switching_mode == HIGH_FREQ_ONLY) {
     switch (switching_mode) {
       case LOW_FREQ_ONLY:
+        digitalWrite(MOD_PIN, LOW);
+        digitalWrite(CONTROL_PIN, HIGH);
+
         digitalWrite(LED_BUILTIN, HIGH);
         delay(100);
         digitalWrite(LED_BUILTIN, LOW);
@@ -88,6 +86,9 @@ void loop() {
         break;
 
       case HIGH_FREQ_ONLY:
+        digitalWrite(MOD_PIN, HIGH);
+        digitalWrite(CONTROL_PIN, LOW);
+
         digitalWrite(LED_BUILTIN, HIGH);
         delay(600);
         digitalWrite(LED_BUILTIN, LOW);
