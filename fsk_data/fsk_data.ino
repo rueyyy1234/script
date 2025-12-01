@@ -21,8 +21,12 @@ volatile uint16_t bit_interval_us = 20;  // 100us per bit
 void button_isr_handler() {
   if (switching_mode == LOW_FREQ_ONLY) {
     switching_mode = HIGH_FREQ_ONLY;
+    digitalWrite(MOD_PIN, HIGH);
+    digitalWrite(CONTROL_PIN, LOW);
   } else {
     switching_mode = LOW_FREQ_ONLY;
+    digitalWrite(MOD_PIN, LOW);
+    digitalWrite(CONTROL_PIN, HIGH);
   }
 }
 
