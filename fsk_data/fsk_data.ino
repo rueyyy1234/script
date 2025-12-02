@@ -64,10 +64,7 @@ void timer_handler() {
   }
 }
 
-uint8_t idx = 0;
 void loop() {
-  idx++;
-  Serial.println(data[idx]);
   while (state == NO_SERIAL) {
     switch (switching_mode) {
       case LOW_FREQ_ONLY:
