@@ -35,9 +35,9 @@ uint32_t bit_idx = 0;
 #else
 uint8_t state;
 volatile uint8_t bit_idx = 0;
+uint16_t bit_interval_us;
 #endif
 
-uint16_t bit_interval_us;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -75,6 +75,8 @@ void button_isr_handler() {
 
 void timer_handler() {
 #if defined(INCLUDE_DATA)
+  if (state == END) return;
+  
   uint8_t bit = (uint8_t)(rand_data[bit_idx] & 0x01);
   digitalWrite(MOD_PIN, bit ? HIGH : LOW);
   digitalWrite(CONTROL_PIN, bit ? LOW : HIGH);
@@ -128,9 +130,9 @@ void loop() {
 #if defined(INCLUDE_DATA)
   if (state == INIT) {
     state = START;
-    digitalWrite(LED_BUILTIN, HIGH);
+
     while (state != END) {
-      ;
+      digitalWrite(LED_BUILTIN, HIGH);
     }
     Timer1.stop();
     digitalWrite(LED_BUILTIN, LOW);

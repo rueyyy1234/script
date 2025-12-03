@@ -1,13 +1,13 @@
 clear; clc
 delete(serialportfind);
 
-devName = "/dev/cu.usbmodem1201"; % Rename ARDUINO port name
+devName = "/dev/cu.usbmodem11201"; % Rename ARDUINO port name
 dev = serialport(devName,115200);
 
 rand_data = readmatrix("test.csv"); % CDV data file name
 configureCallback(dev, "terminator", @printRead);
 
-bps = 6000; % Data rate
+bps = 1000; % Data rate
 bit_interval_us = uint16(round(1e6/(bps)));
 printBitInterval(bit_interval_us);
 write(dev, bit_interval_us, "uint16");
