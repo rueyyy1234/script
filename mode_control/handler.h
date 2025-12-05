@@ -25,6 +25,7 @@
 #define INIT 0
 #define DATA_OUTPUT_START 1
 #define DATA_OUTPUT_END 2
+#define DATA_OUTPUT_NO_END 3
 
 static uint8_t data_output_state = INIT;
 static uint32_t cur_bit_idx = 0;
@@ -60,6 +61,7 @@ void mode_1_handler() {
 }
 
 void mode_2_handler() {
+  data_output_state = DATA_OUTPUT_START;
   start_timer_1(BIT_INTERVAL_US_1);
 
   while (data_output_state == DATA_OUTPUT_START) {
@@ -72,6 +74,7 @@ void mode_2_handler() {
 }
 
 void mode_3_handler() {
+  data_output_state = DATA_OUTPUT_NO_END;
   start_timer_1(BIT_INTERVAL_US_1);
 
   while (1) {
@@ -80,6 +83,8 @@ void mode_3_handler() {
 }
 
 void mode_4_handler() {
+  data_output_state = DATA_OUTPUT_START;
+
   start_timer_1(BIT_INTERVAL_US_2);
 
   while (data_output_state == DATA_OUTPUT_START) {
@@ -94,6 +99,8 @@ void mode_4_handler() {
 }
 
 void mode_5_handler() {
+  data_output_state = DATA_OUTPUT_NO_END;
+
   start_timer_1(BIT_INTERVAL_US_2);
 
   while (1) {
@@ -102,6 +109,7 @@ void mode_5_handler() {
 }
 
 void mode_6_handler() {
+  data_output_state = DATA_OUTPUT_START;
   start_timer_1(BIT_INTERVAL_US_3);
 
   while (data_output_state == DATA_OUTPUT_START) {
@@ -116,6 +124,7 @@ void mode_6_handler() {
 }
 
 void mode_7_handler() {
+  data_output_state = DATA_OUTPUT_NO_END;
   start_timer_1(BIT_INTERVAL_US_3);
 
   while (1) {
@@ -124,6 +133,7 @@ void mode_7_handler() {
 }
 
 void mode_8_handler() {
+  data_output_state = DATA_OUTPUT_START;
   start_timer_1(BIT_INTERVAL_US_4);
 
   while (data_output_state == DATA_OUTPUT_START) {
@@ -138,6 +148,7 @@ void mode_8_handler() {
 }
 
 void mode_9_handler() {
+  data_output_state = DATA_OUTPUT_NO_END;
   start_timer_1(BIT_INTERVAL_US_4);
 
   while (1) {
@@ -177,8 +188,6 @@ void error_handler() {
 
 static void start_timer_1(uint16_t bit_interval_us) {
   cur_bit_idx = 0;
-  data_output_state = DATA_OUTPUT_START;
-
   Timer1.attachInterrupt(timer_1_handler);
   Timer1.setPeriod(bit_interval_us);
   Timer1.start();
@@ -195,6 +204,10 @@ static void timer_1_handler() {
   digitalWrite(CONTROL_PIN, data_out ? LOW : HIGH);
 
   cur_bit_idx++;
+  if ((data_output_state == DATA_OUTPUT_NO_END) && (cur_bit_idx >= (uint32_t)BIT_NO)) {
+    cur_bit_idx = 0;
+    return;
+  }
 
   if (cur_bit_idx >= (uint32_t)BIT_NO) {
     data_output_state = DATA_OUTPUT_END;
