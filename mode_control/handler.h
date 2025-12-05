@@ -46,13 +46,17 @@ void run_handler() {
 
 // handlers
 void mode_0_handler() {
-  digitalWrite(MOD_PIN, LOW);
-  digitalWrite(CONTROL_PIN, HIGH);
+  while (1) {
+    digitalWrite(MOD_PIN, LOW);
+    digitalWrite(CONTROL_PIN, HIGH);
+  }
 }
 
 void mode_1_handler() {
-  digitalWrite(MOD_PIN, HIGH);
-  digitalWrite(CONTROL_PIN, LOW);
+  while (1) {
+    digitalWrite(MOD_PIN, HIGH);
+    digitalWrite(CONTROL_PIN, LOW);
+  }
 }
 
 void mode_2_handler() {
@@ -84,6 +88,8 @@ void mode_4_handler() {
 
   while (1) {
     digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(MOD_PIN, LOW);
+    digitalWrite(CONTROL_PIN, HIGH);
   }
 }
 
@@ -104,6 +110,8 @@ void mode_6_handler() {
 
   while (1) {
     digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(MOD_PIN, LOW);
+    digitalWrite(CONTROL_PIN, HIGH);
   }
 }
 
@@ -116,11 +124,25 @@ void mode_7_handler() {
 }
 
 void mode_8_handler() {
-  return;
+  start_timer_1(BIT_INTERVAL_US_4);
+
+  while (data_output_state == DATA_OUTPUT_START) {
+    digitalWrite(LED_BUILTIN, HIGH);
+  }
+
+  while (1) {
+    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(MOD_PIN, LOW);
+    digitalWrite(CONTROL_PIN, HIGH);
+  }
 }
 
 void mode_9_handler() {
-  return;
+  start_timer_1(BIT_INTERVAL_US_4);
+
+  while (1) {
+    digitalWrite(LED_BUILTIN, HIGH);
+  }
 }
 
 void mode_10_handler() {
