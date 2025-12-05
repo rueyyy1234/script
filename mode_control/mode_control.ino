@@ -40,19 +40,19 @@ uint8_t get_mode() {
   uint8_t mode = 0;
 
 
-  val = digitalRead(SWITCH_PIN_1);
+  val = digitalRead(SWITCH_PIN_4);
   mode |= ((~val) & 0x01);
 
 
-  val = digitalRead(SWITCH_PIN_2);
+  val = digitalRead(SWITCH_PIN_3);
   mode |= (((~val) & 0x01) << 1);
 
 
-  val = digitalRead(SWITCH_PIN_3);
+  val = digitalRead(SWITCH_PIN_2);
   mode |= (((~val) & 0x01) << 2);
 
 
-  val = digitalRead(SWITCH_PIN_4);
+  val = digitalRead(SWITCH_PIN_1);
   mode |= (((~val) & 0x01) << 3);
 
 

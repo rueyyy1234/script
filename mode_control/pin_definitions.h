@@ -6,9 +6,9 @@
 #define BUTTON_PIN 5
 
 
-#define SWITCH_PIN_1 4
-#define SWITCH_PIN_2 3
-#define SWITCH_PIN_3 2
-#define SWITCH_PIN_4 1
+#define SWITCH_PIN_1 A0
+#define SWITCH_PIN_2 A1
+#define SWITCH_PIN_3 A2
+#define SWITCH_PIN_4 A3
 
 #endif

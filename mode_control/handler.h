@@ -56,7 +56,7 @@ void mode_1_handler() {
 }
 
 void mode_2_handler() {
-  start_timer_1(BIT_INTERVAL_1);
+  start_timer_1(BIT_INTERVAL_US_1);
 
   while (data_output_state == DATA_OUTPUT_START) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -68,7 +68,7 @@ void mode_2_handler() {
 }
 
 void mode_3_handler() {
-  start_timer_1(BIT_INTERVAL_1);
+  start_timer_1(BIT_INTERVAL_US_1);
 
   while (1) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -76,7 +76,7 @@ void mode_3_handler() {
 }
 
 void mode_4_handler() {
-  start_timer_1(BIT_INTERVAL_2);
+  start_timer_1(BIT_INTERVAL_US_2);
 
   while (data_output_state == DATA_OUTPUT_START) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -88,7 +88,7 @@ void mode_4_handler() {
 }
 
 void mode_5_handler() {
-  start_timer_1(BIT_INTERVAL_2);
+  start_timer_1(BIT_INTERVAL_US_2);
 
   while (1) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -96,7 +96,7 @@ void mode_5_handler() {
 }
 
 void mode_6_handler() {
-  start_timer_1(BIT_INTERVAL_3);
+  start_timer_1(BIT_INTERVAL_US_3);
 
   while (data_output_state == DATA_OUTPUT_START) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -108,7 +108,7 @@ void mode_6_handler() {
 }
 
 void mode_7_handler() {
-  start_timer_1(BIT_INTERVAL_3);
+  start_timer_1(BIT_INTERVAL_US_3);
 
   while (1) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -116,49 +116,33 @@ void mode_7_handler() {
 }
 
 void mode_8_handler() {
-  start_timer_1(BIT_INTERVAL_4);
-
-  while (data_output_state == DATA_OUTPUT_START) {
-    digitalWrite(LED_BUILTIN, HIGH);
-  }
-
-  while (1) {
-    digitalWrite(LED_BUILTIN, LOW);
-  }
+  return;
 }
 
 void mode_9_handler() {
-  start_timer_1(BIT_INTERVAL_4);
-
-  while (1) {
-    digitalWrite(LED_BUILTIN, HIGH);
-  }
+  return;
 }
 
 void mode_10_handler() {
-  start_timer_1(BIT_INTERVAL_5);
-
-  while (data_output_state == DATA_OUTPUT_START) {
-    digitalWrite(LED_BUILTIN, HIGH);
-  }
-
-  while (1) {
-    digitalWrite(LED_BUILTIN, LOW);
-  }
+  return;
 }
 
 void mode_11_handler() {
-  start_timer_1(BIT_INTERVAL_5);
-
-  while (1) {
-    digitalWrite(LED_BUILTIN, HIGH);
-  }
+  return;
 }
 
-void mode_12_handler() { return; }
-void mode_13_handler() { return; }
-void mode_14_handler() { return; }
-void mode_15_handler() { return; }
+void mode_12_handler() {
+  return;
+}
+void mode_13_handler() {
+  return;
+}
+void mode_14_handler() {
+  return;
+}
+void mode_15_handler() {
+  return;
+}
 
 void error_handler() {
   while (1) {

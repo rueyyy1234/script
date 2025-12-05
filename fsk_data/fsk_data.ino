@@ -13,6 +13,7 @@
 #define START (1 << 1)
 #define END (1 << 2)
 #endif
+
 #define READING (1 << 3)
 #define WRITING (1 << 4)
 #define INITIATING (1 << 5)
@@ -26,8 +27,6 @@
 void timer_handler();
 void button_isr_handler();
 
-uint8_t switching_mode;
-volatile uint8_t current_byte = 0;
 #if defined(INCLUDE_DATA)
 #include "data.h"
 uint8_t state = INIT;
@@ -36,7 +35,9 @@ uint32_t bit_idx = 0;
 uint8_t state;
 volatile uint8_t bit_idx = 0;
 uint16_t bit_interval_us;
-#endif
+#endif // defined(INCLUDE_DATA)
+uint8_t switching_mode;
+volatile uint8_t current_byte = 0;
 
 
 void setup() {
@@ -61,7 +62,7 @@ void setup() {
     Timer1.attachInterrupt(timer_handler);
     digitalWrite(MOD_PIN, LOW);
     digitalWrite(CONTROL_PIN, HIGH);
-#endif
+#endif // defined(INCLUDE_DATA)
   }
 }
 
@@ -82,6 +83,7 @@ void timer_handler() {
   digitalWrite(CONTROL_PIN, bit ? LOW : HIGH);
   bit_idx++;
   if (bit_idx >= (uint32_t)BIT_NO) {
+    bit_idx = 0;
     state = END;
   }
 #else
@@ -95,7 +97,7 @@ void timer_handler() {
     bit_idx = 0;
     state = READING;
   }
-#endif
+#endif // defined(INCLUDE_DATA)
 }
 
 void loop() {
@@ -151,5 +153,5 @@ void loop() {
     state = WRITING;
     digitalWrite(LED_BUILTIN, HIGH);
   }
-#endif
+#endif // defined(INCLUDE_DATA)
 }
