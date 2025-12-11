@@ -44,14 +44,6 @@ for idx = 1:params_length
     Rx_data_high = abs(envelope(Rx_data_high, filter_samp_no, "analytic"));
     Rx_data = (Rx_data_high > Rx_data_low)';
 
-    del = finddelay(double(Tx_data), double(Rx_data));
-    if(del < 1)
-        del = 1;
-    end
-    Rx_data = [Rx_data(del:end), zeros(1, del)];
-    Rx_data_low = [Rx_data_low(del:end)', zeros(1, del)];
-    Rx_data_high = [Rx_data_high(del:end)', zeros(1, del)];
-
     Tx_data_in = samplesToData(Tx_data, samples_per_bit,sent_bit_length);
     if(sum(abs(Tx_data_in-data_ori)) > 0)
         warning("Tx data demodulation failed! (%d)(%d bps, %d mm, %s)\n",...
@@ -68,7 +60,9 @@ for idx = 1:params_length
         idx, params.bps, params.distance, params.medium, ber)
 
     if (ber > 0)
-        err_idx = find(abs(Tx_data_in - Rx_data_in) == 1).*samples_per_bit;
+        clear err_idx
+        err_idx(1,:) = find(abs(Tx_data_in - Rx_data_in) == 1);
+        err_idx(2,:) = find(abs(Tx_data_in - Rx_data_in) == 1).*samples_per_bit;
     end
 
 end

@@ -5,10 +5,15 @@ SENT_BIT_LEN = 1500;
 SAMP_RATE = 0.5e6;
 % plot_raw_signal = 1;
 % plot_filtered_signal = 1;
-% plot_data = 1;
+% plot_filtered_signal_env = 1;
+plot_sampled_data = 1;
+plot_data = 1;
 % find_start_index = 1;
-set_x_lim = [1 10000];
-idx = 15;
+set_x_lim = [1 1000];
+set_y_lim = [0 5];
+% set_time = 1;
+idx = 13;
+
 
 params = getParams(idx);
 raw_data = getRawData(params.bps,params.distance,params.medium,SAMP_RATE);
@@ -25,10 +30,10 @@ filter_f1 = [f1 - filt_threshold, f1 + filt_threshold];
 filter_f2 = [f2 - filt_threshold, f2 + filt_threshold];
 
 Tx_data_low = bandpass(V_in, filter_f1, SAMP_RATE,ImpulseResponse="iir");
-Tx_data_low = abs(envelope(Tx_data_low, filter_samp_no, "analytic"));
+Tx_data_low_env = abs(envelope(Tx_data_low, filter_samp_no, "analytic"));
 Tx_data_high = bandpass(V_in, filter_f2, SAMP_RATE,ImpulseResponse="iir");
-Tx_data_high = abs(envelope(Tx_data_high, filter_samp_no, "analytic"));
-Tx_data = (Tx_data_high > Tx_data_low)';
+Tx_data_high_env = abs(envelope(Tx_data_high, filter_samp_no, "analytic"));
+Tx_data = (Tx_data_high_env > Tx_data_low_env)';
 
 if exist('find_start_index','var')
     find(Tx_data==1,1)
@@ -36,18 +41,10 @@ if exist('find_start_index','var')
 end
 
 Rx_data_low = bandpass(V_out, filter_f1, SAMP_RATE,ImpulseResponse="iir");
-Rx_data_low = abs(envelope(Rx_data_low, filter_samp_no, "analytic"));
+Rx_data_low_env = abs(envelope(Rx_data_low, filter_samp_no, "analytic"));
 Rx_data_high = bandpass(V_out, filter_f2, SAMP_RATE,ImpulseResponse="iir");
-Rx_data_high = abs(envelope(Rx_data_high, filter_samp_no, "analytic"));
-Rx_data = (Rx_data_high > Rx_data_low)';
-
-del = finddelay(double(Tx_data), double(Rx_data));
-if(del < 1)
-    del = 1;
-end
-Rx_data = [Rx_data(del:end), zeros(1, del)];
-Rx_data_low = [Rx_data_low(del:end)', zeros(1, del)];
-Rx_data_high = [Rx_data_high(del:end)', zeros(1, del)];
+Rx_data_high_env = abs(envelope(Rx_data_high, filter_samp_no, "analytic"));
+Rx_data = (Rx_data_high_env > Rx_data_low_env)';
 
 Tx_data_in = samplesToData(Tx_data, samples_per_bit, SENT_BIT_LEN);
 if(sum(abs(Tx_data_in-data_ori)) > 0)
@@ -71,12 +68,18 @@ end
 
 if exist('plot_raw_signal','var')
     figure
-    tiledlayout('vertical')
+    tl = tiledlayout('vertical');
+    title_str = sprintf("%d bps, %d mm, %s",params.bps,params.distance,params.medium);
+    title(tl, title_str)
+
     nexttile
     plot(V_in, "LineWidth", 2)
     title('V_{in}')
     if exist('set_x_lim','var')
         xlim(set_x_lim)
+    end
+    if exist('set_y_lim','var')
+        ylim([-set_y_lim(2) set_y_lim(2)])
     end
 
     nexttile
@@ -85,40 +88,108 @@ if exist('plot_raw_signal','var')
     if exist('set_x_lim','var')
         xlim(set_x_lim)
     end
+    if exist('set_y_lim','var')
+        ylim([-set_y_lim(2) set_y_lim(2)])
+    end
+
 end
 
 if exist('plot_filtered_signal','var')
     figure
-    tiledlayout('vertical')
+    tl = tiledlayout('vertical');
+    title_str = sprintf("%d bps, %d mm, %s",params.bps,params.distance,params.medium);
+    title(tl, title_str)
+
     nexttile
-    plot(Tx_data_low, "LineWidth", 2)
+
+    if exist('set_time','var')
+        plot(t_tx_data,Tx_data_low, "LineWidth", 2)
+        hold on
+        plot(t_tx_data,Tx_data_high, "LineWidth", 2)
+        hold off
+    else
+        plot(Tx_data_low, "LineWidth", 2)
+        hold on
+        plot(Tx_data_high, "LineWidth", 2)
+        hold off
+    end
+    title('Tx Data')
+    legend(["f_1", "f_2"])
+    if exist('set_x_lim','var')
+        xlim(set_x_lim)
+    end
+    if exist('set_y_lim','var')
+        ylim([-set_y_lim(2) set_y_lim(2)])
+    end
+
+    nexttile
+    if exist('set_time','var')
+        plot(t_rx_data,Rx_data_low, "LineWidth", 2)
+        hold on
+        plot(t_rx_data,Rx_data_high, "LineWidth", 2)
+        hold off
+    else
+        plot(Rx_data_low, "LineWidth", 2)
+        hold on
+        plot(Rx_data_high, "LineWidth", 2)
+        hold off
+    end
+    title('Rx Data')
+    legend(["f_1", "f_2"])
+    if exist('set_x_lim','var')
+        xlim(set_x_lim)
+    end
+    if exist('set_y_lim','var')
+        ylim([-set_y_lim(2) set_y_lim(2)])
+    end
+end
+
+if exist('plot_filtered_signal_env','var')
+    figure
+    tl = tiledlayout('vertical');
+    title_str = sprintf("%d bps, %d mm, %s",params.bps,params.distance,params.medium);
+    title(tl, title_str)
+
+    nexttile
+    plot(Tx_data_low_env, "LineWidth", 2)
     hold on
-    plot(Tx_data_high, "LineWidth", 2)
+    plot(Tx_data_high_env, "LineWidth", 2)
     hold off
     title('Tx Data')
     legend(["f_1", "f_2"])
     if exist('set_x_lim','var')
         xlim(set_x_lim)
     end
+    if exist('set_y_lim','var')
+        ylim(set_y_lim)
+    end
 
     nexttile
-    plot(Rx_data_low, "LineWidth", 2)
+    plot(Rx_data_low_env, "LineWidth", 2)
     hold on
-    plot(Rx_data_high, "LineWidth", 2)
+    plot(Rx_data_high_env, "LineWidth", 2)
     hold off
     title('Rx Data')
     legend(["f_1", "f_2"])
     if exist('set_x_lim','var')
         xlim(set_x_lim)
     end
+    if exist('set_y_lim','var')
+        ylim(set_y_lim)
+    end
 end
 
-if exist('plot_data','var')
+if exist('plot_sampled_data','var')
     figure
-    tiledlayout('vertical')
+    tl = tiledlayout('vertical');
+    title_str = sprintf("%d bps, %d mm, %s",params.bps,params.distance,params.medium);
+    title(tl, title_str)
     nexttile
-    % stairs(t_tx_data,Tx_data,"LineWidth",2.5)
-    stairs(Tx_data, "LineWidth", 2.5)
+    if exist('set_time','var')
+        stairs(t_tx_data,Tx_data,"LineWidth",2.5)
+    else
+        stairs(Tx_data, "LineWidth", 2.5)
+    end
 
     ylim([-0.1 1.1])
     set(gca, 'Fontsize', 20)
@@ -129,13 +200,51 @@ if exist('plot_data','var')
     end
 
     nexttile
-    % stairs(t_rx_data,Rx_data,"LineWidth",2.5)
-    stairs(Rx_data, "LineWidth", 2.5)
+    if exist('set_time','var')
+        stairs(t_rx_data,Rx_data,"LineWidth",2.5)
+    else
+        stairs(Rx_data, "LineWidth", 2.5)
+    end
     ylim([-0.1 1.1])
     set(gca, 'Fontsize', 20)
     title("受信データ")
     yticks([0 1])
     if exist('set_x_lim','var')
         xlim(set_x_lim)
+    end
+end
+
+if exist('plot_data','var')
+    figure
+    tl = tiledlayout('vertical');
+    title_str = sprintf("%d bps, %d mm, %s",params.bps,params.distance,params.medium);
+    title(tl, title_str)
+    nexttile
+    if exist('set_time','var')
+        stairs(t_tx_data,Tx_data_in,"LineWidth",2.5)
+    else
+        stairs(Tx_data_in, "LineWidth", 2.5)
+    end
+
+    ylim([-0.1 1.1])
+    set(gca, 'Fontsize', 20)
+    yticks([0 1])
+    title("送信データ")
+    if exist('set_x_lim','var')
+        xlim(round(set_x_lim./samples_per_bit))
+    end
+
+    nexttile
+    if exist('set_time','var')
+        stairs(t_rx_data,Rx_data_in,"LineWidth",2.5)
+    else
+        stairs(Rx_data_in, "LineWidth", 2.5)
+    end
+    ylim([-0.1 1.1])
+    set(gca, 'Fontsize', 20)
+    title("受信データ")
+    yticks([0 1])
+    if exist('set_x_lim','var')
+        xlim(round(set_x_lim./samples_per_bit))
     end
 end

@@ -6,17 +6,17 @@ bit_length = ceil(samp_rate * 1/bps * bit_no);
 
 switch (file_name)
     case "1000bps_1500bit_50mm_air.csv"
-        start_idx = 482838;
+        start_idx = 482830;
     case "1000bps_1500bit_50mm_salt4.csv"
-        start_idx = 146461;
+        start_idx = 146465;
     case "3000bps_1500bit_50mm_air.csv"
-        start_idx = 71550;
+        start_idx = 71548;
     case "3000bps_1500bit_50mm_salt4.csv"
-        start_idx = 84885;
+        start_idx = 84894;
     case "5000bps_1500bit_50mm_air.csv"
-        start_idx = 449220;
+        start_idx = 449228;
     case "5000bps_1500bit_50mm_salt4.csv"
-        start_idx = 161574;
+        start_idx = 161580;
     case "7000bps_1500bit_50mm_air.csv"
         start_idx = 39531;
     case "7000bps_1500bit_50mm_salt4.csv"
@@ -30,7 +30,7 @@ switch (file_name)
     case "3000bps_1500bit_100mm_salt4.csv"
         start_idx = 130560;
     case "5000bps_1500bit_100mm_air.csv"
-        start_idx = 530736;
+        start_idx = 530735;
     case "5000bps_1500bit_100mm_salt4.csv"
         start_idx = 136615;
     case "7000bps_1500bit_100mm_air.csv"
